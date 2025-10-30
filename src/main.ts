@@ -1,6 +1,7 @@
-import { initRemix } from "@insidethesim/remix-dev"
-import { GameScene } from "./scenes/GameScene"
-import GameSettings from "./config/GameSettings"
+import { initRemix } from "@insidethesim/remix-dev";
+import GameSettings from "./config/GameSettings";
+import { GameScene } from "./scenes/GameScene";
+import { MainScene } from "./scenes/MainScene";
 
 // SDK mock is automatically initialized by the framework (dev-init.ts)
 
@@ -16,7 +17,7 @@ const config: Phaser.Types.Core.GameConfig = {
     height: GameSettings.canvas.height,
   },
   backgroundColor: "#1a1a1a",
-  scene: [GameScene],
+  scene: [MainScene, GameScene],
   physics: {
     default: "arcade",
   },
@@ -24,18 +25,18 @@ const config: Phaser.Types.Core.GameConfig = {
     target: 60,
   },
   pixelArt: false,
-  antialias: true
-}
+  antialias: true,
+};
 
 // Create the game instance
-const game = new Phaser.Game(config)
+const game = new Phaser.Game(config);
 
 // Store globally for performance monitoring and HMR cleanup
-;(window as any).game = game
+(window as any).game = game;
 
 // Initialize Remix framework after game is created
 game.events.once("ready", () => {
   initRemix(game, {
-    multiplayer: false
-  })
-})
+    multiplayer: false,
+  });
+});
