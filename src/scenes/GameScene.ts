@@ -45,6 +45,7 @@ export class GameScene extends Phaser.Scene {
   private strikes: number = 0;
   private maxStrikes: number = 2;
   private timeRemaining: number = 1; // 0 to 1 (100%)
+  private levelTimer?: Phaser.Time.TimerEvent; // Timer for level countdown
 
   // Map Settings
   private readonly MAP_WIDTH = 3240; // 4.5x canvas width for horizontal scrolling
@@ -57,6 +58,39 @@ export class GameScene extends Phaser.Scene {
     super({ key: "GameScene" });
   }
 
+  init(data: {
+    currentLevel?: number;
+    currentScore?: number;
+    foundCharacters?: Set<string>;
+  }) {
+    // Restore level, score, and found characters from previous level
+    if (data.currentLevel !== undefined) {
+      this.currentLevel = data.currentLevel;
+    }
+    if (data.currentScore !== undefined) {
+      this.currentScore = data.currentScore;
+    }
+    if (data.foundCharacters !== undefined) {
+      this.foundCharacters = data.foundCharacters;
+    }
+
+    // Reset game state for new level
+    this.strikes = 0;
+    this.timeRemaining = 1;
+    this.isDragging = false;
+
+    // Clean up gradient textures from previous level to prevent conflicts
+    if (this.textures.exists("introModalGradient")) {
+      this.textures.remove("introModalGradient");
+    }
+    if (this.textures.exists("foundModalGradient")) {
+      this.textures.remove("foundModalGradient");
+    }
+    if (this.textures.exists("headerGradient")) {
+      this.textures.remove("headerGradient");
+    }
+  }
+
   preload() {
     // Load WebFont for Chicle
     this.load.script(
@@ -64,11 +98,11 @@ export class GameScene extends Phaser.Scene {
       "https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"
     );
 
-    // Load map background image
-    this.load.image("map1", "https://i.postimg.cc/NFR4Wvy2/map1.png");
-
     // Load all character images dynamically
     this.loadCharacterImages();
+
+    // Load map backgrounds for all levels
+    this.loadLevelMaps();
   }
 
   private loadCharacterImages() {
@@ -80,6 +114,29 @@ export class GameScene extends Phaser.Scene {
 
       // Load card image (for album/modals)
       this.load.image(`${character.id}-card`, character.cardImageUrl);
+    });
+  }
+
+  private loadLevelMaps() {
+    // Map backgrounds for each level (1-13)
+    const levelMaps = [
+      { level: 1, url: "https://i.postimg.cc/Kvyr2K7t/Level1.png" },
+      { level: 2, url: "https://i.postimg.cc/g2zVxfTG/Level2.png" },
+      { level: 3, url: "https://i.postimg.cc/x1fvXW4Q/Level3.png" },
+      { level: 4, url: "https://i.postimg.cc/VkfqJ3V8/level4.png" },
+      { level: 5, url: "https://i.postimg.cc/524BXZR1/level5.png" },
+      { level: 6, url: "https://i.postimg.cc/YCd1Yb59/level6.png" },
+      { level: 7, url: "https://i.postimg.cc/vZ0Wf3JG/level7.png" },
+      { level: 8, url: "https://i.postimg.cc/13vpwJkX/level8.png" },
+      { level: 9, url: "https://i.postimg.cc/DwxqLB98/level9.png" },
+      { level: 10, url: "https://i.postimg.cc/x16KMtwm/level10.png" },
+      { level: 11, url: "https://i.postimg.cc/T3trgCzm/level11.png" },
+      { level: 12, url: "https://i.postimg.cc/y8LFcvMm/level12.png" },
+      { level: 13, url: "https://i.postimg.cc/fR8xmBGv/level13.png" },
+    ];
+
+    levelMaps.forEach((levelMap) => {
+      this.load.image(`level-${levelMap.level}-bg`, levelMap.url);
     });
   }
 
@@ -157,8 +214,9 @@ export class GameScene extends Phaser.Scene {
     // Create container for all map elements at header position
     this.mapContainer = this.add.container(0, this.HEADER_HEIGHT);
 
-    // Create map background image
-    const mapImage = this.add.image(0, 0, "map1");
+    // Create map background image using current level
+    const mapKey = `level-${this.currentLevel}-bg`;
+    const mapImage = this.add.image(0, 0, mapKey);
     mapImage.setOrigin(0, 0); // Set origin to top-left
 
     // Make sure UI camera ignores the map
@@ -344,6 +402,11 @@ export class GameScene extends Phaser.Scene {
 
   private showGameOverModal() {
     const { width, height } = GameSettings.canvas;
+
+    // Stop the level timer
+    if (this.levelTimer) {
+      this.levelTimer.remove();
+    }
 
     // Semi-transparent overlay
     const overlay = this.add.rectangle(
@@ -704,6 +767,11 @@ export class GameScene extends Phaser.Scene {
   private showFoundModal() {
     const { width, height } = GameSettings.canvas;
 
+    // Stop the level timer
+    if (this.levelTimer) {
+      this.levelTimer.remove();
+    }
+
     // Semi-transparent overlay
     const overlay = this.add.rectangle(
       width / 2,
@@ -910,7 +978,8 @@ export class GameScene extends Phaser.Scene {
       // Add score
       this.updateScore(100);
 
-      console.log("Modal cerrado, continuar al siguiente nivel...");
+      // Go to next level
+      this.goToNextLevel();
     });
 
     // Make game camera ignore modal elements
@@ -1265,7 +1334,7 @@ export class GameScene extends Phaser.Scene {
 
   private startLevelTimer() {
     // Timer that decreases energy bar over time
-    this.time.addEvent({
+    this.levelTimer = this.time.addEvent({
       delay: 100,
       callback: () => {
         this.timeRemaining -= 0.002; // Adjust for difficulty
@@ -1295,6 +1364,28 @@ export class GameScene extends Phaser.Scene {
   private updateLevel(level: number) {
     this.currentLevel = level;
     this.levelText.setText(`LEVEL ${this.currentLevel}`);
+  }
+
+  private goToNextLevel() {
+    const maxLevel = 13; // Maximum level (we have 13 characters)
+
+    if (this.currentLevel < maxLevel) {
+      // Go to next level
+      this.currentLevel++;
+      console.log(`Advancing to Level ${this.currentLevel}`);
+
+      // Restart scene with new level data
+      this.scene.restart({
+        currentLevel: this.currentLevel,
+        currentScore: this.currentScore,
+        foundCharacters: this.foundCharacters,
+      });
+    } else {
+      // Completed all levels - Show victory screen or go back to main menu
+      console.log("¡Congratulations! All levels completed!");
+      // TODO: Show victory modal or return to main menu
+      this.scene.start("MainScene");
+    }
   }
 
   update() {
