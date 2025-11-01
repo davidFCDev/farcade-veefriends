@@ -1,5 +1,8 @@
 import { CharacterData, getAllCharacters } from "../config/CharactersData";
 import GameSettings from "../config/GameSettings";
+import GameStateManager from "../utils/GameStateManager";
+import MenuMusicController from "../utils/MenuMusicController";
+import { GameScene } from "./GameScene";
 
 export class AlbumScene extends Phaser.Scene {
   private foundCharacters: Set<string> = new Set(); // IDs of found characters
@@ -9,13 +12,16 @@ export class AlbumScene extends Phaser.Scene {
   private isDragging: boolean = false;
   private dragStartX: number = 0;
   private dragDistance: number = 0;
+  // characterLevels removed - now using GameStateManager
 
   constructor() {
     super({ key: "AlbumScene" });
   }
 
-  init(data: { foundCharacters?: Set<string> }) {
-    // Receive found characters from previous scene
+  init(data: {
+    foundCharacters?: Set<string>;
+  }) {
+    // Receive found characters from previous scene (optional, not used anymore)
     if (data.foundCharacters) {
       this.foundCharacters = data.foundCharacters;
     }
@@ -36,10 +42,10 @@ export class AlbumScene extends Phaser.Scene {
       "https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"
     );
 
-    // Load album background image
+    // Load album background image (WebP for faster loading)
     this.load.image(
       "album-background",
-      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/fondo%20album-8mHOveFa44aNuM9zYgMTDmS1c6SA92.png"
+      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/fondo-textura-DUv1xwl3LH3zlOf4D4mACjNtBrTSET.webp"
     );
 
     // Load all character card images
@@ -47,6 +53,19 @@ export class AlbumScene extends Phaser.Scene {
     characters.forEach((character) => {
       this.load.image(`${character.id}-card`, character.cardImageUrl);
     });
+
+    this.load.audio(
+      "sfx-button",
+      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/button-glDsBe370knE7WctxtYObJCunwLy2N.mp3?3wMr"
+    );
+    this.load.audio(
+      "sfx-swipe",
+      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/swipe-gq4oztrjb4E2kHftiKL7G31dvlMxWx.mp3?L6hd"
+    );
+    this.load.audio(
+      "bgm-menu",
+      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/main-song-PcbJRVFBNYAiEXs0hmOdFb2GWzD7X9.mp3?rwJn"
+    );
   }
 
   create() {
@@ -64,6 +83,9 @@ export class AlbumScene extends Phaser.Scene {
   private initializeAlbum() {
     const { width, height } = GameSettings.canvas;
 
+    GameScene.stopGlobalLevelMusic(this.sound);
+    MenuMusicController.play(this);
+
     // Get all characters and sort by level
     this.allCharacters = getAllCharacters().sort((a, b) => a.level - b.level);
 
@@ -78,6 +100,22 @@ export class AlbumScene extends Phaser.Scene {
 
     // Back button
     this.createBackButton();
+  }
+
+  private playButtonSound() {
+    if (!this.cache?.audio?.exists("sfx-button")) {
+      return;
+    }
+
+    this.sound.play("sfx-button", { volume: 0.55 });
+  }
+
+  private playSwipeSound() {
+    if (!this.cache?.audio?.exists("sfx-swipe")) {
+      return;
+    }
+
+    this.sound.play("sfx-swipe", { volume: 0.45 });
   }
 
   private createGradientBackground() {
@@ -183,8 +221,9 @@ export class AlbumScene extends Phaser.Scene {
     const cardContainer = this.add.container(x, y);
     const shadowOffset = 12;
 
-    // Check if character is unlocked
-    const isUnlocked = this.foundCharacters.has(character.id);
+    // Check if character is unlocked using GameStateManager
+    const stateManager = GameStateManager.getInstance();
+    const isUnlocked = stateManager.isCharacterUnlocked(character.id);
 
     // Get personalized gradient for this character
     const characterGradient = this.getCharacterGradient(
@@ -392,8 +431,10 @@ export class AlbumScene extends Phaser.Scene {
       badgeBorder.strokeCircle(badgeX, badgeY, badgeRadius);
       cardContainer.add(badgeBorder);
 
-      // Level number (always 1 for now, can be dynamic later)
-      const levelNumber = this.add.text(badgeX, badgeY, "1", {
+      // Level number from GameStateManager
+      const stateManager = GameStateManager.getInstance();
+      const levelValue = stateManager.getCharacterLevel(character.id);
+      const levelNumber = this.add.text(badgeX, badgeY, `${levelValue}`, {
         fontSize: `${badgeRadius * 1.37}px`, // ~48px for 35px radius
         color: "#F7EA48", // Yellow fill
         fontFamily: "Chicle, cursive",
@@ -488,6 +529,7 @@ export class AlbumScene extends Phaser.Scene {
     if (this.currentCardIndex < this.allCharacters.length - 1) {
       this.currentCardIndex++;
       this.updateCardPositions(true);
+      this.playSwipeSound();
     }
   }
 
@@ -495,6 +537,7 @@ export class AlbumScene extends Phaser.Scene {
     if (this.currentCardIndex > 0) {
       this.currentCardIndex--;
       this.updateCardPositions(true);
+      this.playSwipeSound();
     }
   }
 
@@ -602,6 +645,8 @@ export class AlbumScene extends Phaser.Scene {
 
     // Back button handler
     buttonZone.on("pointerdown", () => {
+      this.playButtonSound();
+      MenuMusicController.play(this);
       this.scene.start("MainScene");
     });
   }

@@ -24,15 +24,15 @@ export const CHARACTERS_DATA: CharacterData[] = [
       "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/graceful-goldfish-card-Q8aA2CJAf8jB0YZOvEaFqG5xYMYI3t.png",
   },
   {
-    id: "gritty-ghost",
-    name: "Gritty Ghost",
+    id: "courageous-cockatoo",
+    name: "Courageous Cockatoo",
     description:
-      "Some say Gritty Ghost was so determined to achieve his goals that he just kept on working on into the afterlife.",
+      "She tells us that real courage isn't about avoiding the challenges, but facing them head-on with a fearless spirit.",
     level: 2,
     mapImageUrl:
-      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/gritty-ghost-map-D1RrtRkqNXXe9jpHiDPOub6zaYskO8.png",
+      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/courageous-cockatoo-map-FssNsGOeNc2sXeWeicY42fqUKyPViH.webp",
     cardImageUrl:
-      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/gritty-ghost-card-dQtYhbI971Hwufl2rzeKXcydXbJk29.png",
+      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/courageous-cockatoo-card-x3l0PjLJyfaPcDN83sTjdmc5tPIfQa.webp",
   },
   {
     id: "pleasant-platypus",
@@ -46,15 +46,15 @@ export const CHARACTERS_DATA: CharacterData[] = [
       "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/pleasant-platypus-card-dIk0Fvl6KQi4SX2cdAl63ubVfsug0v.png",
   },
   {
-    id: "dumbo-octopus",
-    name: "Dumbo Octopus",
+    id: "reliable-rat",
+    name: "Reliable Rat",
     description:
-      "A maestro of the deep, ensures that nothing slips through the cracks and every project is executed with precision and excellence.",
+      "He defies expectations, proving that trustworthiness and dependability can be found in the most unexpected places.",
     level: 4,
     mapImageUrl:
-      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/detail-oriented-map-WHv2SIWOogVrAvhRIeLBZWe1TNBRI4.png",
+      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/reliable-rat-map-aMeoMq3tmNNyptrSOVlIfjhhxFkV0r.webp",
     cardImageUrl:
-      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/detail-oriented-card-uTS3IHVNxMkGrXLNQ3XbP7SazfMsxw.png",
+      "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/8f3d671b-9e38-458d-ae3b-af467487d556/reliable-rat-card-JJkdBHSE73zu89NbcKygxf0NZnjd5v.webp",
   },
   {
     id: "bad-intentions",
